@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="theme-color" content="#10120f">
+	<meta name="description" content="Search movies and discover your next favorite film.">
+	<title>Frame — Movie Search</title>
+	<style>
+		:root {
+			color-scheme: dark;
+			font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+			background: #10120f;
+			color: #f5f4ed;
+			font-synthesis: none;
+			text-rendering: optimizeLegibility;
+			-webkit-font-smoothing: antialiased;
+			--muted: #93958b;
+			--accent: #c7f36b;
+			--surface: #191c18;
+			--line: rgba(255, 255, 255, .1);
+		}
+
+		* { box-sizing: border-box; }
+
+		body {
+			min-width: 320px;
+			min-height: 100vh;
+			margin: 0;
+			background:
+				radial-gradient(ellipse at 78% 7%, rgba(129, 155, 72, .14), transparent 31rem),
+				#10120f;
+		}
+
+		button, input { font: inherit; }
+		button { color: inherit; }
+
+		.shell { width: min(1120px, calc(100% - 48px)); margin: 0 auto; }
+
+		.topbar {
+			height: 82px;
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			border-bottom: 1px solid var(--line);
+		}
+
+		.brand { display: inline-flex; align-items: center; gap: 11px; color: inherit; text-decoration: none; }
+		.brand-mark { width: 31px; height: 31px; color: var(--accent); }
+		.brand-name { font-size: 16px; font-weight: 750; letter-spacing: -.5px; }
+		.top-note { color: var(--muted); font-size: 12px; letter-spacing: .04em; }
+
+		main { padding: 87px 0 76px; }
+
+		.intro { max-width: 700px; margin: 0 auto; text-align: center; }
+		.eyebrow {
+			display: inline-flex;
+			align-items: center;
+			gap: 9px;
+			margin: 0 0 23px;
+			color: var(--accent);
+			font-size: 11px;
+			font-weight: 750;
+			letter-spacing: .16em;
+			text-transform: uppercase;
+		}
+
+		.eyebrow::before { width: 21px; height: 1px; background: currentColor; content: ""; }
+		h1 { margin: 0; font-size: clamp(42px, 7vw, 72px); font-weight: 600; letter-spacing: -.065em; line-height: 1.03; }
+		h1 span { color: var(--accent); }
+		.subtitle { margin: 20px auto 0; color: var(--muted); font-size: 15px; line-height: 1.7; }
+
+		.search-form {
+			display: flex;
+			gap: 8px;
+			max-width: 650px;
+			margin: 38px auto 0;
+			padding: 7px;
+			border: 1px solid rgba(255, 255, 255, .13);
+			border-radius: 14px;
+			background: rgba(25, 28, 24, .94);
+			box-shadow: 0 18px 60px rgba(0, 0, 0, .22);
+			text-align: left;
+		}
+
+		.search-icon { width: 20px; height: 20px; flex: none; color: #a6a99c; }
+		.search-input-wrap { display: flex; flex: 1; align-items: center; gap: 12px; min-width: 0; padding: 0 11px; }
+		.search-input { width: 100%; min-width: 0; padding: 12px 0; border: 0; outline: 0; background: transparent; color: #f5f4ed; font-size: 14px; }
+		.search-input::placeholder { color: #777a70; }
+		.search-input:focus-visible { outline: 0; }
+
+		.search-button {
+			display: inline-flex;
+			min-height: 46px;
+			align-items: center;
+			justify-content: center;
+			gap: 9px;
+			padding: 0 19px;
+			border: 0;
+			border-radius: 9px;
+			background: var(--accent);
+			color: #15190e;
+			cursor: pointer;
+			font-size: 13px;
+			font-weight: 750;
+			transition: background .18s ease, transform .18s ease;
+		}
+
+		.search-button:hover { transform: translateY(-1px); background: #d5fb83; }
+		.search-button:disabled { cursor: wait; opacity: .7; transform: none; }
+		.search-button svg { width: 15px; height: 15px; }
+
+		.quick-searches { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 9px; margin-top: 19px; color: var(--muted); font-size: 12px; }
+		.quick-searches button { padding: 6px 11px; border: 1px solid var(--line); border-radius: 99px; background: transparent; color: #c6c8bf; cursor: pointer; font-size: 11px; transition: border-color .18s ease, color .18s ease; }
+		.quick-searches button:hover { border-color: rgba(199, 243, 107, .6); color: var(--accent); }
+
+		.results-section { margin-top: 82px; }
+		.results-heading { display: flex; align-items: end; justify-content: space-between; gap: 16px; padding-bottom: 17px; border-bottom: 1px solid var(--line); }
+		.results-heading h2 { margin: 0; font-size: 18px; font-weight: 600; letter-spacing: -.025em; }
+		.result-count { color: var(--muted); font-size: 12px; }
+		.movie-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px 18px; padding-top: 22px; }
+
+		.movie-card { min-width: 0; }
+		.poster {
+			position: relative;
+			overflow: hidden;
+			aspect-ratio: 2 / 3;
+			border: 1px solid rgba(255, 255, 255, .1);
+			border-radius: 10px;
+			background:
+				radial-gradient(ellipse at 50% 35%, rgba(199, 243, 107, .12), transparent 52%),
+				#1c201b;
+		}
+
+		.poster img { display: block; width: 100%; height: 100%; object-fit: cover; }
+		.poster-fallback { display: grid; width: 100%; height: 100%; place-items: center; color: #676b5f; }
+		.poster-fallback svg { width: 45px; height: 45px; }
+		.movie-type { position: absolute; top: 10px; left: 10px; padding: 5px 8px; border: 1px solid rgba(255, 255, 255, .14); border-radius: 5px; background: rgba(13, 15, 12, .76); color: #e6e8df; font-size: 9px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; backdrop-filter: blur(8px); }
+		.movie-title { overflow: hidden; margin: 12px 0 5px; font-size: 14px; font-weight: 600; letter-spacing: -.02em; text-overflow: ellipsis; white-space: nowrap; }
+		.movie-year { margin: 0; color: var(--muted); font-size: 12px; }
+
+		.message { padding: 28px 20px; border: 1px solid var(--line); border-radius: 11px; background: rgba(25, 28, 24, .62); color: var(--muted); font-size: 13px; line-height: 1.6; text-align: center; }
+		.message[hidden], .results-section[hidden] { display: none; }
+		.message.error { border-color: rgba(255, 133, 113, .28); color: #ffb2a4; }
+		.spinner { width: 14px; height: 14px; border: 2px solid rgba(21, 25, 14, .28); border-top-color: currentColor; border-radius: 50%; animation: spin .7s linear infinite; }
+
+		@keyframes spin { to { transform: rotate(360deg); } }
+		@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
+
+		@media (max-width: 760px) {
+			main { padding-top: 70px; }
+			.results-section { margin-top: 64px; }
+			.movie-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px 14px; }
+		}
+
+		@media (max-width: 520px) {
+			.shell { width: min(100% - 32px, 440px); }
+			.topbar { height: 68px; }
+			.top-note { font-size: 10px; }
+			main { padding: 58px 0 52px; }
+			.subtitle { max-width: 310px; font-size: 13px; }
+			.search-form { gap: 3px; margin-top: 28px; padding: 5px; }
+			.search-input-wrap { gap: 8px; padding: 0 8px; }
+			.search-input { font-size: 13px; }
+			.search-button { min-height: 42px; gap: 6px; padding: 0 12px; font-size: 12px; }
+			.search-button svg { display: none; }
+			.quick-searches { gap: 7px; }
+			.results-section { margin-top: 52px; }
+			.movie-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 12px; padding-top: 17px; }
+			.movie-title { font-size: 13px; }
+		}
+	</style>
+</head>
+<body>
+	<div class="shell">
+		<header class="topbar">
+			<a class="brand" href="/" aria-label="Frame home">
+				<svg class="brand-mark" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+					<path d="M5 8.5A3.5 3.5 0 0 1 8.5 5h15A3.5 3.5 0 0 1 27 8.5v15a3.5 3.5 0 0 1-3.5 3.5h-15A3.5 3.5 0 0 1 5 23.5v-15Z" stroke="currentColor" stroke-width="1.5"/>
+					<path d="m13 11 8 5-8 5V11Z" fill="currentColor"/>
+				</svg>
+				<span class="brand-name">frame</span>
+			</a>
+			<span class="top-note">A little more movie night.</span>
+		</header>
+
+		<main>
+			<section class="intro" aria-labelledby="page-title">
+				<p class="eyebrow">The movie finder</p>
+				<h1 id="page-title">Find your next<br><span>favorite film.</span></h1>
+				<p class="subtitle">Search the big screen, the small screen, and everything in between.</p>
+
+				<form class="search-form" id="search-form" role="search">
+					<label class="search-input-wrap" for="movie-search">
+						<svg class="search-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+							<circle cx="10.8" cy="10.8" r="6.8" stroke="currentColor" stroke-width="1.7"/>
+							<path d="m16 16 4.2 4.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+						</svg>
+						<input class="search-input" id="movie-search" name="title" type="search" placeholder="Search a movie title..." autocomplete="off" required>
+					</label>
+					<button class="search-button" id="search-button" type="submit">
+						<span id="button-label">Search movies</span>
+						<svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+							<path d="M4 10h12m-5-5 5 5-5 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+						</svg>
+					</button>
+				</form>
+
+				<div class="quick-searches" aria-label="Popular searches">
+					<span>Try</span>
+					<button type="button" data-query="Inception">Inception</button>
+					<button type="button" data-query="The Matrix">The Matrix</button>
+					<button type="button" data-query="Interstellar">Interstellar</button>
+				</div>
+			</section>
+
+			<section class="results-section" id="results-section" aria-live="polite" hidden>
+				<div class="results-heading">
+					<h2 id="results-title">Search results</h2>
+					<span class="result-count" id="result-count"></span>
+				</div>
+				<p class="message" id="message" role="status" hidden></p>
+				<div class="movie-grid" id="movie-grid"></div>
+			</section>
+		</main>
+	</div>
+
+	<script>
+		const form = document.querySelector("#search-form");
+		const input = document.querySelector("#movie-search");
+		const button = document.querySelector("#search-button");
+		const buttonLabel = document.querySelector("#button-label");
+		const resultsSection = document.querySelector("#results-section");
+		const resultsTitle = document.querySelector("#results-title");
+		const resultCount = document.querySelector("#result-count");
+		const message = document.querySelector("#message");
+		const movieGrid = document.querySelector("#movie-grid");
+
+		function setMessage(text, isError = false) {
+			message.textContent = text;
+			message.classList.toggle("error", isError);
+			message.hidden = !text;
+		}
+
+		function renderMovies(movies) {
+			movieGrid.replaceChildren();
+
+			for (const movie of movies) {
+				const card = document.createElement("article");
+				card.className = "movie-card";
+
+				const poster = document.createElement("div");
+				poster.className = "poster";
+				const posterUrl = movie.Poster;
+				if (posterUrl && posterUrl !== "N/A" && /^https?:\/\//i.test(posterUrl)) {
+					const image = document.createElement("img");
+					image.src = posterUrl;
+					image.alt = `Poster for ${movie.Title}`;
+					image.loading = "lazy";
+					image.onerror = () => {
+						const fallback = document.createElement("div");
+						fallback.className = "poster-fallback";
+						fallback.innerHTML = '<svg viewBox="0 0 48 48" fill="none" aria-hidden="true"><rect x="8" y="7" width="32" height="34" rx="3" stroke="currentColor" stroke-width="1.5"/><path d="M8 16h32M17 7v9m14-9v9M18 25l5 5 8-9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+						poster.replaceChildren(fallback);
+					};
+					poster.append(image);
+				} else {
+					const fallback = document.createElement("div");
+					fallback.className = "poster-fallback";
+					fallback.setAttribute("aria-label", "No poster available");
+					fallback.innerHTML = '<svg viewBox="0 0 48 48" fill="none" aria-hidden="true"><rect x="8" y="7" width="32" height="34" rx="3" stroke="currentColor" stroke-width="1.5"/><path d="M8 16h32M17 7v9m14-9v9M18 25l5 5 8-9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+					poster.append(fallback);
+				}
+
+				if (movie.Type) {
+					const type = document.createElement("span");
+					type.className = "movie-type";
+					type.textContent = movie.Type;
+					poster.append(type);
+				}
+
+				const title = document.createElement("h3");
+				title.className = "movie-title";
+				title.textContent = movie.Title || "Untitled";
+
+				const year = document.createElement("p");
+				year.className = "movie-year";
+				year.textContent = movie.Year || "Year unavailable";
+
+				card.append(poster, title, year);
+				movieGrid.append(card);
+			}
+		}
+
+		async function searchMovies(title) {
+			const query = title.trim();
+			if (!query) {
+				input.focus();
+				return;
+			}
+
+			resultsSection.hidden = false;
+			resultsTitle.textContent = `Results for “${query}”`;
+			resultCount.textContent = "";
+			movieGrid.replaceChildren();
+			setMessage("Searching movies…");
+			button.disabled = true;
+			buttonLabel.textContent = "Searching";
+			const spinner = document.createElement("span");
+			spinner.className = "spinner";
+			spinner.setAttribute("aria-hidden", "true");
+			button.append(spinner);
+
+			try {
+				const response = await fetch(`/api/movies?title=${encodeURIComponent(query)}`, {
+					headers: { Accept: "application/json" }
+				});
+				const data = await response.json().catch(() => ({}));
+				if (!response.ok) {
+					throw new Error(data.detail || data.message || "Movie search failed. Please try again.");
+				}
+
+				const movies = Array.isArray(data.Search) ? data.Search : [];
+				setMessage(movies.length ? "" : `No movies found for “${query}”. Try another title.`);
+				renderMovies(movies);
+				resultCount.textContent = movies.length
+					? `${data.totalResults || movies.length} ${Number(data.totalResults || movies.length) === 1 ? "title" : "titles"}`
+					: "";
+			} catch (error) {
+				setMessage(error.message || "Could not reach the movie service. Please try again.", true);
+			} finally {
+				button.disabled = false;
+				buttonLabel.textContent = "Search movies";
+				button.querySelector(".spinner")?.remove();
+			}
+		}
+
+		form.addEventListener("submit", (event) => {
+			event.preventDefault();
+			searchMovies(input.value);
+		});
+
+		document.querySelectorAll("[data-query]").forEach((chip) => {
+			chip.addEventListener("click", () => {
+				input.value = chip.dataset.query;
+				searchMovies(input.value);
+			});
+		});
+	</script>
+</body>
+</html>

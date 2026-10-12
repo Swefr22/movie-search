@@ -1,0 +1,5 @@
+com\example\newsapp\movie\MovieSearchResponse.class
+com\example\newsapp\movie\Movie.class
+com\example\newsapp\movie\MovieController.class
+com\example\newsapp\movie\MovieService.class
+com\example\newsapp\NewsApp.class
